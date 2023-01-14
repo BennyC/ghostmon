@@ -6,10 +6,10 @@ package ghostmon
 // - Abort
 
 type HTTPServer struct {
-	communication CommunicationAdapter
+	communication Communicator
 }
 
-func NewHTTPServer(adapter CommunicationAdapter) *HTTPServer {
+func NewHTTPServer(adapter Communicator) *HTTPServer {
 	return &HTTPServer{
 		communication: adapter,
 	}

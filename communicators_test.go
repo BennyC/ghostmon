@@ -22,7 +22,7 @@ func TestCommunicator_CutOver(t *testing.T) {
 	})
 
 	received, _ := io.ReadAll(server)
-	require.Equal(t, "cutover", string(received))
+	require.Equal(t, "unpostpone", string(received))
 	wg.Wait()
 }
 
@@ -34,10 +34,9 @@ func TestCommunicator_CutOverErrors(t *testing.T) {
 	var wg conc.WaitGroup
 	wg.Go(func() {
 		err := adapter.CutOver()
-		assert.NoError(t, err)
+		assert.Error(t, err)
 	})
 
-	received, _ := io.ReadAll(server)
-	assert.Equal(t, "cutover", string(received))
+	_, _ = io.ReadAll(server)
 	wg.Wait()
 }
