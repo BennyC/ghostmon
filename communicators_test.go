@@ -17,7 +17,7 @@ func TestCommunicator_CutOver(t *testing.T) {
 
 	var wg conc.WaitGroup
 	wg.Go(func() {
-		err := adapter.CutOver()
+		err := adapter.Unpostpone()
 		assert.NoError(t, err)
 	})
 
@@ -33,7 +33,7 @@ func TestCommunicator_CutOverErrors(t *testing.T) {
 
 	var wg conc.WaitGroup
 	wg.Go(func() {
-		err := adapter.CutOver()
+		err := adapter.Unpostpone()
 		assert.Error(t, err)
 	})
 

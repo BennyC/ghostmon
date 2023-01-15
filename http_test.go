@@ -1,10 +1,11 @@
 package ghostmon_test
 
 import (
-	"bytes"
 	"github.com/justpark/ghostmon"
+	"github.com/sourcegraph/conc"
 	"github.com/stretchr/testify/require"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -33,9 +34,9 @@ func TestHandleUnpostponeOnlyAllowsPost(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			var b bytes.Buffer
+			_, w := net.Pipe()
 			request := httptest.NewRequest(testCase.method, "/unpostpone", nil)
-			response := serveRequest(t, &b, request)
+			response := serveRequest(t, w, request)
 
 			require.Equal(t, http.StatusMethodNotAllowed, response.Code)
 		})
@@ -43,17 +44,24 @@ func TestHandleUnpostponeOnlyAllowsPost(t *testing.T) {
 }
 
 func TestHandleUnpostponeSendsCommand(t *testing.T) {
-	var b bytes.Buffer
+	r, w := net.Pipe()
 	request := httptest.NewRequest(http.MethodPost, "/unpostpone", nil)
-	response := serveRequest(t, &b, request)
 
-	require.Equal(t, "unpostpone", b.String())
-	require.Equal(t, http.StatusCreated, response.Code)
+	var wg conc.WaitGroup
+	wg.Go(func() {
+		response := serveRequest(t, w, request)
+		require.Equal(t, http.StatusCreated, response.Code)
+	})
+
+	b, _ := io.ReadAll(r)
+	require.Equal(t, "unpostpone", string(b))
+
+	wg.Wait()
 }
 
 func serveRequest(
 	t *testing.T,
-	writer io.Writer,
+	writer net.Conn,
 	request *http.Request,
 ) *httptest.ResponseRecorder {
 	t.Helper()

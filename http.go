@@ -5,11 +5,6 @@ import (
 	"time"
 )
 
-// Endpoints
-// - Status
-// - CutOver
-// - Abort
-
 func NewHTTPServer(adapter *Communicator) *http.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/unpostpone", handleUnpostpone(adapter))
@@ -28,7 +23,7 @@ func NewHTTPServer(adapter *Communicator) *http.Server {
 // and send an "unpostpone" command over the Communicator to the postponed gh-ost process
 func handleUnpostpone(adapter *Communicator) http.HandlerFunc {
 	return onlyAllowMethod(http.MethodPost, func(writer http.ResponseWriter, request *http.Request) {
-		if err := adapter.CutOver(); err != nil {
+		if err := adapter.Unpostpone(); err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
