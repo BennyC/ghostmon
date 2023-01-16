@@ -7,6 +7,14 @@ type Config struct {
 	ConnectionAddress string `mapstructure:"CONNECTION_ADDR"`
 }
 
+func (c Config) Network() string {
+	return c.ConnectionType
+}
+
+func (c Config) String() string {
+	return c.ConnectionAddress
+}
+
 // LoadConfig will return a *Config with system required parameters
 // Any failures to load the system configuration, an error will be
 // returned to the caller
