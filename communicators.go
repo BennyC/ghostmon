@@ -9,6 +9,18 @@ type Communicator struct {
 	conn net.Conn
 }
 
+// NewNetCommunicator will create a new *Communicator from the desired network type
+// and address location. Any errors when connecting the *Communicator to gh-ost will be
+// returned to the caller
+func NewNetCommunicator(addr net.Addr) (*Communicator, error) {
+	conn, err := net.Dial(addr.Network(), addr.Network())
+	if err != nil {
+		return nil, fmt.Errorf("unable to dial addr: %w", err)
+	}
+
+	return NewCommunicator(conn), nil
+}
+
 // NewCommunicator will create a Communicator instance, based upon the io.Writer
 // provided. This will normally be a net.Conn
 func NewCommunicator(conn net.Conn) *Communicator {

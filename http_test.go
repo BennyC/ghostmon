@@ -36,7 +36,7 @@ func TestHandleUnpostponeOnlyAllowsPost(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			_, w := net.Pipe()
 			request := httptest.NewRequest(testCase.method, "/unpostpone", nil)
-			response := serveRequest(t, w, request)
+			response := ServeAndHandleRequest(t, w, request)
 
 			require.Equal(t, http.StatusMethodNotAllowed, response.Code)
 		})
@@ -49,7 +49,7 @@ func TestHandleUnpostponeSendsCommand(t *testing.T) {
 
 	var wg conc.WaitGroup
 	wg.Go(func() {
-		response := serveRequest(t, w, request)
+		response := ServeAndHandleRequest(t, w, request)
 		require.Equal(t, http.StatusCreated, response.Code)
 	})
 
@@ -59,7 +59,7 @@ func TestHandleUnpostponeSendsCommand(t *testing.T) {
 	wg.Wait()
 }
 
-func serveRequest(
+func ServeAndHandleRequest(
 	t *testing.T,
 	writer net.Conn,
 	request *http.Request,
