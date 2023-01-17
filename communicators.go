@@ -5,51 +5,61 @@ import (
 	"net"
 )
 
+// Connector is how we connect with our running gh-ost instances, regardless
+// of TCP usage or Unix Sockets. Will return a net.Conn which messages can sent
+// across. Any errors when connecting should be returned to the caller.
+type Connector interface {
+	Dial(addr net.Addr) (net.Conn, error)
+}
+
 type Communicator struct {
-	conn net.Conn
+	connector Connector
+	conn      net.Conn
+	addr      net.Addr
 }
 
 // NewNetCommunicator will create a new *Communicator from the desired network type
-// and address location. Any errors when connecting the *Communicator to gh-ost will be
-// returned to the caller
-func NewNetCommunicator(addr net.Addr) (*Communicator, error) {
-	conn, err := net.Dial(addr.Network(), addr.String())
-	if err != nil {
-		return nil, fmt.Errorf("unable to dial addr: %w", err)
+// and address location.
+func NewNetCommunicator(addr net.Addr) *Communicator {
+	return &Communicator{
+		addr: addr,
+		conn: nil,
 	}
-
-	return NewCommunicator(conn), nil
 }
 
-// NewCommunicator will create a Communicator instance, based upon the io.Writer
-// provided. This will normally be a net.Conn
-func NewCommunicator(conn net.Conn) *Communicator {
-	return &Communicator{conn}
+// NewCommunicator will create a Communicator instance, any communications attempted
+// will require an active net.Conn to be made through Connector
+func NewCommunicator(connector Connector) *Communicator {
+	return &Communicator{
+		connector: connector,
+		conn:      nil,
+		addr:      nil,
+	}
 }
 
 // Unpostpone will communicate a cutover request with gh-ost through the io.Writer
 // within the Communicator instance
 func (a *Communicator) Unpostpone() error {
-	err := a.send([]byte("unpostpone"))
-	if err != nil {
-		return fmt.Errorf("failed to send command: %w", err)
-	}
+	return a.connect(func(conn net.Conn) error {
+		_, err := conn.Write([]byte("unpostpone"))
+		if err != nil {
+			return fmt.Errorf("failed to write command: %w", err)
+		}
 
-	return nil
+		err = conn.Close()
+		if err != nil {
+			return fmt.Errorf("failed to close conn: %w", err)
+		}
+
+		return nil
+	})
 }
 
-// send will attempt to write to the connected net.Conn, any errors received
-// during Write or Close will be returned to the caller
-func (a *Communicator) send(b []byte) error {
-	_, err := a.conn.Write(b)
+func (a *Communicator) connect(fn func(net.Conn) error) error {
+	conn, err := a.connector.Dial(a.addr)
 	if err != nil {
-		return fmt.Errorf("failed to write to conn: %w", err)
+		return err
 	}
 
-	err = a.conn.Close()
-	if err != nil {
-		return fmt.Errorf("unable to close conn: %w", err)
-	}
-
-	return nil
+	return fn(conn)
 }

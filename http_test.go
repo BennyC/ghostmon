@@ -2,7 +2,9 @@ package ghostmon_test
 
 import (
 	gtest "github.com/justpark/ghostmon/pkg/testing"
+	"github.com/sourcegraph/conc"
 	"github.com/stretchr/testify/require"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -31,32 +33,29 @@ func TestHandleUnpostponeOnlyAllowsPost(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			httpServer, listener := gtest.CreateHTTPServer(t)
-			defer func() {
-				_ = listener.Close()
-			}()
-
+			httpServer, _ := gtest.CreateHTTPServer(t)
 			request := httptest.NewRequest(testCase.method, "/unpostpone", nil)
 			response := httptest.NewRecorder()
+
 			httpServer.Handler.ServeHTTP(response, request)
 
 			require.Equal(t, http.StatusMethodNotAllowed, response.Code)
-			// TODO Test we receive no connections to our server
 		})
 	}
 }
 
 func TestHandleUnpostponeSendsCommand(t *testing.T) {
 	httpServer, listener := gtest.CreateHTTPServer(t)
-	defer func() {
-		_ = listener.Close()
-	}()
+
+	var wg conc.WaitGroup
+	wg.Go(func() {
+		msg, _ := io.ReadAll(listener)
+		require.EqualValues(t, "unpostpone", msg)
+	})
 
 	response := httptest.NewRecorder()
 	request := httptest.NewRequest(http.MethodPost, "/unpostpone", nil)
 	httpServer.Handler.ServeHTTP(response, request)
-	msg, _ := gtest.ReceiveNetMessage(t, listener)
 
 	require.Equal(t, http.StatusCreated, response.Code)
-	require.EqualValues(t, "unpostpone", msg)
 }

@@ -29,16 +29,25 @@ func ReceiveNetMessage(t *testing.T, listener net.Listener) ([]byte, error) {
 // CreateHTTPServer will create a ghostmon.HTTPServer and give it the net address
 // of a random testable TCP port. The listener for this port will also be
 // returned to the caller
-func CreateHTTPServer(t *testing.T) (*http.Server, net.Listener) {
+func CreateHTTPServer(t *testing.T) (*http.Server, net.Conn) {
 	t.Helper()
 
-	// TODO Handle err
-	ln, _ := net.Listen("tcp", "127.0.0.1:0")
+	server, client := net.Pipe()
+	communicator := ghostmon.NewCommunicator(PipeConnector(client))
 
-	communicator, err := ghostmon.NewNetCommunicator(ln.Addr())
-	if err != nil {
-		t.FailNow()
-	}
+	return ghostmon.NewHTTPServer(communicator), server
+}
 
-	return ghostmon.NewHTTPServer(communicator), ln
+var _ ghostmon.Connector = &pipeConnector{}
+
+type pipeConnector struct {
+	server net.Conn
+}
+
+func (p pipeConnector) Dial(addr net.Addr) (net.Conn, error) {
+	return p.server, nil
+}
+
+func PipeConnector(s net.Conn) ghostmon.Connector {
+	return &pipeConnector{server: s}
 }
