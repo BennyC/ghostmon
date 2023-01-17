@@ -12,11 +12,11 @@ type Connector interface {
 	Connect() (net.Conn, error)
 }
 
-type NetConnector struct {
+type DialConnector struct {
 	addr net.Addr
 }
 
-func (n NetConnector) Connect() (net.Conn, error) {
+func (n DialConnector) Connect() (net.Conn, error) {
 	conn, err := net.Dial(n.addr.Network(), n.addr.String())
 	if err != nil {
 		return nil, fmt.Errorf("unable to connect: %w", err)
@@ -25,8 +25,8 @@ func (n NetConnector) Connect() (net.Conn, error) {
 	return conn, nil
 }
 
-func WithNetConnector(config *Config) Connector {
-	return &NetConnector{addr: config}
+func WithDialConnector(config *Config) Connector {
+	return &DialConnector{addr: config}
 }
 
 type Communicator struct {

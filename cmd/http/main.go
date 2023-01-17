@@ -11,7 +11,7 @@ func main() {
 		panic(fmt.Errorf("unable to load configuration: %w", err))
 	}
 
-	comm := ghostmon.NewCommunicator(ghostmon.WithNetConnector(config))
+	comm := ghostmon.NewCommunicator(ghostmon.WithDialConnector(config))
 
 	server := ghostmon.NewHTTPServer(comm)
 	if err := server.ListenAndServe(); err != nil {
