@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/justpark/ghostmon"
+	"github.com/justpark/ghostmon/pkg/http"
 )
 
 func main() {
@@ -13,7 +14,7 @@ func main() {
 
 	comm := ghostmon.NewCommunicator(ghostmon.WithDialConnector(config))
 
-	server := ghostmon.NewHTTPServer(comm)
+	server := http.NewHTTPServer(comm)
 	if err := server.ListenAndServe(); err != nil {
 		// TODO Handle err
 	}

@@ -1,4 +1,4 @@
-package ghostmon_test
+package http_test
 
 import (
 	gtest "github.com/justpark/ghostmon/pkg/testing"
