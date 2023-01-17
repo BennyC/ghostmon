@@ -47,6 +47,7 @@ func TestHandleUnpostponeOnlyAllowsPost(t *testing.T) {
 func TestHandleUnpostponeSendsCommand(t *testing.T) {
 	httpServer, listener := gtest.CreateHTTPServer(t)
 
+	// TODO Figure out how to remove WaitGroups
 	var wg conc.WaitGroup
 	wg.Go(func() {
 		msg, _ := io.ReadAll(listener)

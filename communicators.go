@@ -31,8 +31,6 @@ func WithNetConnector(config *Config) Connector {
 
 type Communicator struct {
 	connector Connector
-	conn      net.Conn
-	addr      net.Addr
 }
 
 // NewCommunicator will create a Communicator instance, any communications attempted
@@ -40,8 +38,6 @@ type Communicator struct {
 func NewCommunicator(connector Connector) *Communicator {
 	return &Communicator{
 		connector: connector,
-		conn:      nil,
-		addr:      nil,
 	}
 }
 
