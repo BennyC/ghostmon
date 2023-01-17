@@ -44,7 +44,7 @@ type pipeConnector struct {
 	server net.Conn
 }
 
-func (p pipeConnector) Dial(addr net.Addr) (net.Conn, error) {
+func (p pipeConnector) Connect() (net.Conn, error) {
 	return p.server, nil
 }
 

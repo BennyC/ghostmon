@@ -9,22 +9,30 @@ import (
 // of TCP usage or Unix Sockets. Will return a net.Conn which messages can sent
 // across. Any errors when connecting should be returned to the caller.
 type Connector interface {
-	Dial(addr net.Addr) (net.Conn, error)
+	Connect() (net.Conn, error)
+}
+
+type NetConnector struct {
+	addr net.Addr
+}
+
+func (n NetConnector) Connect() (net.Conn, error) {
+	conn, err := net.Dial(n.addr.Network(), n.addr.String())
+	if err != nil {
+		return nil, fmt.Errorf("unable to connect: %w", err)
+	}
+
+	return conn, nil
+}
+
+func WithNetConnector(config *Config) Connector {
+	return &NetConnector{addr: config}
 }
 
 type Communicator struct {
 	connector Connector
 	conn      net.Conn
 	addr      net.Addr
-}
-
-// NewNetCommunicator will create a new *Communicator from the desired network type
-// and address location.
-func NewNetCommunicator(addr net.Addr) *Communicator {
-	return &Communicator{
-		addr: addr,
-		conn: nil,
-	}
 }
 
 // NewCommunicator will create a Communicator instance, any communications attempted
@@ -56,7 +64,7 @@ func (a *Communicator) Unpostpone() error {
 }
 
 func (a *Communicator) connect(fn func(net.Conn) error) error {
-	conn, err := a.connector.Dial(a.addr)
+	conn, err := a.connector.Connect()
 	if err != nil {
 		return err
 	}

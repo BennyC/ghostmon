@@ -11,10 +11,7 @@ func main() {
 		panic(fmt.Errorf("unable to load configuration: %w", err))
 	}
 
-	comm, err := ghostmon.NewNetCommunicator(config)
-	if err != nil {
-		// TODO Handle err
-	}
+	comm := ghostmon.NewCommunicator(ghostmon.WithNetConnector(config))
 
 	server := ghostmon.NewHTTPServer(comm)
 	if err := server.ListenAndServe(); err != nil {
