@@ -1,4 +1,4 @@
-package ghostmon
+package config
 
 import (
 	"github.com/spf13/viper"
@@ -20,10 +20,10 @@ func (c Config) String() string {
 	return c.ConnectionAddress
 }
 
-// LoadConfig will return a *Config with system required parameters
+// Load will return a *Config with system required parameters
 // Any failures to load the system configuration, an error will be
 // returned to the caller
-func LoadConfig() (*Config, error) {
+func Load() (*Config, error) {
 	viper.AutomaticEnv()
 	viper.SetDefault("CONNECTION_TYPE", "tcp")
 	viper.SetDefault("CONNECTION_ADDR", "localhost:9001")

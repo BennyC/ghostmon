@@ -2,7 +2,7 @@ package communicators
 
 import (
 	"fmt"
-	"github.com/justpark/ghostmon"
+	"github.com/justpark/ghostmon/pkg/config"
 	"net"
 )
 
@@ -26,7 +26,7 @@ func (n DialConnector) Connect() (net.Conn, error) {
 	return conn, nil
 }
 
-func WithDialConnector(config *ghostmon.Config) Connector {
+func WithDialConnector(config *config.Config) Connector {
 	return &DialConnector{addr: config}
 }
 
