@@ -2,7 +2,6 @@ package ghostmon_test
 
 import (
 	"github.com/justpark/ghostmon"
-	"github.com/sourcegraph/conc"
 	"github.com/stretchr/testify/require"
 	"io"
 	"net"
@@ -34,9 +33,11 @@ func TestHandleUnpostponeOnlyAllowsPost(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			_, w := net.Pipe()
 			request := httptest.NewRequest(testCase.method, "/unpostpone", nil)
-			response := ServeAndHandleRequest(t, w, request)
+			response := httptest.NewRecorder()
+			httpServer, _, closer := CreateServer(t)
+			httpServer.Handler.ServeHTTP(response, request)
+			defer closer()
 
 			require.Equal(t, http.StatusMethodNotAllowed, response.Code)
 		})
@@ -44,32 +45,37 @@ func TestHandleUnpostponeOnlyAllowsPost(t *testing.T) {
 }
 
 func TestHandleUnpostponeSendsCommand(t *testing.T) {
-	r, w := net.Pipe()
+	httpServer, ghostServer, closer := CreateServer(t)
+	defer closer()
+
+	response := httptest.NewRecorder()
 	request := httptest.NewRequest(http.MethodPost, "/unpostpone", nil)
+	httpServer.Handler.ServeHTTP(response, request)
 
-	var wg conc.WaitGroup
-	wg.Go(func() {
-		response := ServeAndHandleRequest(t, w, request)
-		require.Equal(t, http.StatusCreated, response.Code)
-	})
+	require.Equal(t, http.StatusCreated, response.Code)
+	b, _ := io.ReadAll(ghostServer)
 
-	b, _ := io.ReadAll(r)
 	require.Equal(t, "unpostpone", string(b))
-
-	wg.Wait()
 }
 
-func ServeAndHandleRequest(
-	t *testing.T,
-	writer net.Conn,
-	request *http.Request,
-) *httptest.ResponseRecorder {
+func CreateServer(t *testing.T) (*http.Server, net.Conn, func()) {
 	t.Helper()
 
-	recorder := httptest.NewRecorder()
-	communicator := ghostmon.NewCommunicator(writer)
-	server := ghostmon.NewHTTPServer(communicator)
-	server.Handler.ServeHTTP(recorder, request)
+	// TODO Handle err
+	ln, _ := net.Listen("tcp", "127.0.0.1:0")
+	var ghostServer net.Conn
+	go func() {
+		// TODO Handle err
+		ghostServer, _ = ln.Accept()
+	}()
 
-	return recorder
+	communicator, err := ghostmon.NewNetCommunicator(ln.Addr())
+	if err != nil {
+		t.FailNow()
+	}
+
+	return ghostmon.NewHTTPServer(communicator), ghostServer, func() {
+		// TODO Handle err
+		_ = ln.Close()
+	}
 }

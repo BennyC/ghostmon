@@ -13,7 +13,7 @@ type Communicator struct {
 // and address location. Any errors when connecting the *Communicator to gh-ost will be
 // returned to the caller
 func NewNetCommunicator(addr net.Addr) (*Communicator, error) {
-	conn, err := net.Dial(addr.Network(), addr.Network())
+	conn, err := net.Dial(addr.Network(), addr.String())
 	if err != nil {
 		return nil, fmt.Errorf("unable to dial addr: %w", err)
 	}
