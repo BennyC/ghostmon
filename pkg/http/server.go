@@ -1,12 +1,12 @@
 package http
 
 import (
-	"github.com/justpark/ghostmon"
+	"github.com/justpark/ghostmon/pkg/communicators"
 	"net/http"
 	"time"
 )
 
-func NewHTTPServer(adapter *ghostmon.Communicator) *http.Server {
+func NewHTTPServer(adapter *communicators.Communicator) *http.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/unpostpone", handleUnpostpone(adapter))
 	mux.HandleFunc("/status", handleUnpostpone(adapter))
@@ -22,7 +22,7 @@ func NewHTTPServer(adapter *ghostmon.Communicator) *http.Server {
 
 // handleUnpostpone creates a http.HandlerFunc that will only accept POST requests
 // and send an "unpostpone" command over the Communicator to the postponed gh-ost process
-func handleUnpostpone(adapter *ghostmon.Communicator) http.HandlerFunc {
+func handleUnpostpone(adapter *communicators.Communicator) http.HandlerFunc {
 	return onlyAllowMethod(http.MethodPost, func(writer http.ResponseWriter, request *http.Request) {
 		if err := adapter.Unpostpone(); err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)

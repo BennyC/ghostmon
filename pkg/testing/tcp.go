@@ -1,7 +1,7 @@
 package testing
 
 import (
-	"github.com/justpark/ghostmon"
+	"github.com/justpark/ghostmon/pkg/communicators"
 	ghttp "github.com/justpark/ghostmon/pkg/http"
 	"net"
 	"net/http"
@@ -15,12 +15,12 @@ func CreateHTTPServer(t *testing.T) (*http.Server, net.Conn) {
 	t.Helper()
 
 	server, client := net.Pipe()
-	communicator := ghostmon.NewCommunicator(PipeConnector(client))
+	communicator := communicators.New(PipeConnector(client))
 
 	return ghttp.NewHTTPServer(communicator), server
 }
 
-var _ ghostmon.Connector = &pipeConnector{}
+var _ communicators.Connector = &pipeConnector{}
 
 type pipeConnector struct {
 	server net.Conn
@@ -30,6 +30,6 @@ func (p pipeConnector) Connect() (net.Conn, error) {
 	return p.server, nil
 }
 
-func PipeConnector(s net.Conn) ghostmon.Connector {
+func PipeConnector(s net.Conn) communicators.Connector {
 	return &pipeConnector{server: s}
 }

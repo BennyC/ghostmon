@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/justpark/ghostmon"
+	"github.com/justpark/ghostmon/pkg/communicators"
 	"github.com/justpark/ghostmon/pkg/http"
 )
 
@@ -12,7 +13,7 @@ func main() {
 		panic(fmt.Errorf("unable to load configuration: %w", err))
 	}
 
-	comm := ghostmon.NewCommunicator(ghostmon.WithDialConnector(config))
+	comm := communicators.New(communicators.WithDialConnector(config))
 
 	server := http.NewHTTPServer(comm)
 	if err := server.ListenAndServe(); err != nil {

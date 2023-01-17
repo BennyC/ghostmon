@@ -1,7 +1,8 @@
-package ghostmon
+package communicators
 
 import (
 	"fmt"
+	"github.com/justpark/ghostmon"
 	"net"
 )
 
@@ -25,7 +26,7 @@ func (n DialConnector) Connect() (net.Conn, error) {
 	return conn, nil
 }
 
-func WithDialConnector(config *Config) Connector {
+func WithDialConnector(config *ghostmon.Config) Connector {
 	return &DialConnector{addr: config}
 }
 
@@ -33,9 +34,9 @@ type Communicator struct {
 	connector Connector
 }
 
-// NewCommunicator will create a Communicator instance, any communications attempted
+// New will create a Communicator instance, any communications attempted
 // will require an active net.Conn to be made through Connector
-func NewCommunicator(connector Connector) *Communicator {
+func New(connector Connector) *Communicator {
 	return &Communicator{
 		connector: connector,
 	}
