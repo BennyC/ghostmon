@@ -1,6 +1,11 @@
 package ghostmon
 
-import "github.com/spf13/viper"
+import (
+	"github.com/spf13/viper"
+	"net"
+)
+
+var _ net.Addr = Config{}
 
 type Config struct {
 	ConnectionType    string `mapstructure:"CONNECTION_TYPE"`
