@@ -26,10 +26,10 @@ func ReceiveNetMessage(t *testing.T, listener net.Listener) ([]byte, error) {
 	return b, nil
 }
 
-// CreateServer will create a ghostmon.HTTPServer and give it the net address
+// CreateHTTPServer will create a ghostmon.HTTPServer and give it the net address
 // of a random testable TCP port. The listener for this port will also be
 // returned to the caller
-func CreateServer(t *testing.T) (*http.Server, net.Listener) {
+func CreateHTTPServer(t *testing.T) (*http.Server, net.Listener) {
 	t.Helper()
 
 	// TODO Handle err

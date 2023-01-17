@@ -31,7 +31,7 @@ func TestHandleUnpostponeOnlyAllowsPost(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			httpServer, listener := gtest.CreateServer(t)
+			httpServer, listener := gtest.CreateHTTPServer(t)
 			defer func() {
 				_ = listener.Close()
 			}()
@@ -47,7 +47,7 @@ func TestHandleUnpostponeOnlyAllowsPost(t *testing.T) {
 }
 
 func TestHandleUnpostponeSendsCommand(t *testing.T) {
-	httpServer, listener := gtest.CreateServer(t)
+	httpServer, listener := gtest.CreateHTTPServer(t)
 	defer func() {
 		_ = listener.Close()
 	}()
