@@ -41,6 +41,7 @@ func TestHandleUnpostponeOnlyAllowsPost(t *testing.T) {
 			httpServer.Handler.ServeHTTP(response, request)
 
 			require.Equal(t, http.StatusMethodNotAllowed, response.Code)
+			// TODO Test we receive no connections to our server
 		})
 	}
 }
