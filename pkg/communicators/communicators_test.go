@@ -42,3 +42,18 @@ func TestCommunicator_CutOverErrors(t *testing.T) {
 	_, _ = io.ReadAll(server)
 	wg.Wait()
 }
+
+func TestCommunicator_Panic(t *testing.T) {
+	server, client := net.Pipe()
+	adapter := communicators.New(gtest.PipeConnector(client), logging.NewNilLogger())
+
+	var wg conc.WaitGroup
+	wg.Go(func() {
+		err := adapter.Panic()
+		assert.NoError(t, err)
+	})
+
+	received, _ := io.ReadAll(server)
+	require.Equal(t, "panic", string(received))
+	wg.Wait()
+}
