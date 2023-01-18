@@ -2,6 +2,7 @@ package communicators_test
 
 import (
 	"github.com/justpark/ghostmon/pkg/communicators"
+	"github.com/justpark/ghostmon/pkg/logging"
 	gtest "github.com/justpark/ghostmon/pkg/testing"
 	"io"
 	"net"
@@ -14,7 +15,7 @@ import (
 
 func TestCommunicator_CutOver(t *testing.T) {
 	server, client := net.Pipe()
-	adapter := communicators.New(gtest.PipeConnector(client))
+	adapter := communicators.New(gtest.PipeConnector(client), logging.NewNilLogger())
 
 	var wg conc.WaitGroup
 	wg.Go(func() {
@@ -29,7 +30,7 @@ func TestCommunicator_CutOver(t *testing.T) {
 
 func TestCommunicator_CutOverErrors(t *testing.T) {
 	server, client := net.Pipe()
-	adapter := communicators.New(gtest.PipeConnector(client))
+	adapter := communicators.New(gtest.PipeConnector(client), logging.NewNilLogger())
 	_ = server.Close()
 
 	var wg conc.WaitGroup

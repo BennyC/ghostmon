@@ -1,22 +1,24 @@
 package main
 
 import (
-	"fmt"
 	"github.com/justpark/ghostmon/pkg/communicators"
 	"github.com/justpark/ghostmon/pkg/config"
 	"github.com/justpark/ghostmon/pkg/http"
+	"github.com/justpark/ghostmon/pkg/logging"
 )
 
 func main() {
-	config, err := config.Load()
+	logger := logging.New()
+	c, err := config.Load()
 	if err != nil {
-		panic(fmt.Errorf("unable to load configuration: %w", err))
+		logger.Error("unable to load configuration", err)
+		return
 	}
 
-	comm := communicators.New(communicators.WithDialConnector(config))
-
+	comm := communicators.New(communicators.WithDialConnector(c), logger)
 	server := http.NewHTTPServer(comm)
 	if err := server.ListenAndServe(); err != nil {
-		// TODO Handle err
+		logger.Error("unable to start http server", err)
+		return
 	}
 }

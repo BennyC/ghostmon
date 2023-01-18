@@ -3,6 +3,7 @@ package communicators
 import (
 	"fmt"
 	"github.com/justpark/ghostmon/pkg/config"
+	"golang.org/x/exp/slog"
 	"net"
 )
 
@@ -32,13 +33,15 @@ func WithDialConnector(config *config.Config) Connector {
 
 type Communicator struct {
 	connector Connector
+	logger    *slog.Logger
 }
 
 // New will create a Communicator instance, any communications attempted
 // will require an active net.Conn to be made through Connector
-func New(connector Connector) *Communicator {
+func New(connector Connector, logger *slog.Logger) *Communicator {
 	return &Communicator{
 		connector: connector,
+		logger:    logger,
 	}
 }
 

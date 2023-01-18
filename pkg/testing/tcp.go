@@ -3,6 +3,7 @@ package testing
 import (
 	"github.com/justpark/ghostmon/pkg/communicators"
 	ghttp "github.com/justpark/ghostmon/pkg/http"
+	"github.com/justpark/ghostmon/pkg/logging"
 	"net"
 	"net/http"
 	"testing"
@@ -15,7 +16,7 @@ func CreateHTTPServer(t *testing.T) (*http.Server, net.Conn) {
 	t.Helper()
 
 	server, client := net.Pipe()
-	communicator := communicators.New(PipeConnector(client))
+	communicator := communicators.New(PipeConnector(client), logging.NewNilLogger())
 
 	return ghttp.NewHTTPServer(communicator), server
 }
