@@ -7,14 +7,18 @@ import (
 	"time"
 )
 
-func NewHTTPServer(adapter *communicators.Communicator, logger *slog.Logger) *http.Server {
+func NewHTTPServer(
+	addr string,
+	adapter *communicators.Communicator,
+	logger *slog.Logger,
+) *http.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/unpostpone", handleUnpostpone(adapter, logger))
 	mux.HandleFunc("/status", handleStatus(adapter))
 	mux.HandleFunc("/abort", handleAbort(adapter, logger))
 
 	return &http.Server{
-		Addr:         ":8080",
+		Addr:         addr,
 		Handler:      mux,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,

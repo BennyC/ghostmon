@@ -10,6 +10,7 @@ var _ net.Addr = Config{}
 type Config struct {
 	ConnectionType    string `mapstructure:"CONNECTION_TYPE"`
 	ConnectionAddress string `mapstructure:"CONNECTION_ADDR"`
+	HTTPAddr          string `mapstructure:"HTTP_ADDR"`
 }
 
 func (c Config) Network() string {
@@ -27,6 +28,7 @@ func Load() (*Config, error) {
 	viper.AutomaticEnv()
 	viper.SetDefault("CONNECTION_TYPE", "tcp")
 	viper.SetDefault("CONNECTION_ADDR", "localhost:9001")
+	viper.SetDefault("HTTP_ADDR", ":8080")
 
 	var c *Config
 	if err := viper.Unmarshal(&c); err != nil {

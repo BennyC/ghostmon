@@ -5,6 +5,7 @@ import (
 	"github.com/justpark/ghostmon/pkg/config"
 	"github.com/justpark/ghostmon/pkg/http"
 	"github.com/justpark/ghostmon/pkg/logging"
+	"golang.org/x/exp/slog"
 )
 
 func main() {
@@ -17,8 +18,8 @@ func main() {
 	}
 
 	comm := communicators.New(communicators.WithDialConnector(c), logger)
-	server := http.NewHTTPServer(comm, logger)
-	logger.Info("starting http server")
+	server := http.NewHTTPServer(c.HTTPAddr, comm, logger)
+	logger.Info("starting http server", slog.String("addr", c.HTTPAddr))
 	if err := server.ListenAndServe(); err != nil {
 		logger.Error("unable to start http server", err)
 		return

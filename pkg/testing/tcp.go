@@ -18,7 +18,7 @@ func CreateHTTPServer(t *testing.T) (*http.Server, net.Conn) {
 	server, client := net.Pipe()
 	communicator := communicators.New(PipeConnector(client), logger)
 
-	return ghttp.NewHTTPServer(communicator, logger), server
+	return ghttp.NewHTTPServer(":8080", communicator, logger), server
 }
 
 var _ communicators.Connector = &pipeConnector{}
