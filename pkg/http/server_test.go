@@ -59,4 +59,26 @@ func TestHandleUnpostponeSendsCommand(t *testing.T) {
 	httpServer.Handler.ServeHTTP(response, request)
 
 	require.Equal(t, http.StatusCreated, response.Code)
+	wg.Wait()
+}
+
+func TestHandleStatusSendsStatusCommand(t *testing.T) {
+	t.Skip()
+}
+
+func TestAbortSendsPanicCommand(t *testing.T) {
+	httpServer, listener := gtest.CreateHTTPServer(t)
+
+	var wg conc.WaitGroup
+	wg.Go(func() {
+		msg, _ := io.ReadAll(listener)
+		require.EqualValues(t, "panic", msg)
+	})
+
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodPost, "/abort", nil)
+	httpServer.Handler.ServeHTTP(response, request)
+
+	require.Equal(t, http.StatusCreated, response.Code)
+	wg.Wait()
 }

@@ -11,7 +11,7 @@ func NewHTTPServer(adapter *communicators.Communicator, logger *slog.Logger) *ht
 	mux := http.NewServeMux()
 	mux.HandleFunc("/unpostpone", handleUnpostpone(adapter, logger))
 	mux.HandleFunc("/status", handleStatus(adapter))
-	mux.HandleFunc("/abort", handleAbort(adapter))
+	mux.HandleFunc("/abort", handleAbort(adapter, logger))
 
 	return &http.Server{
 		Addr:         ":8080",
@@ -43,8 +43,18 @@ func handleStatus(adapter *communicators.Communicator) http.HandlerFunc {
 	}
 }
 
-func handleAbort(adapter *communicators.Communicator) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		writer.WriteHeader(http.StatusNotImplemented)
-	}
+// handleAbort creates a http.HandlerFunc that will only accept POST requests from the client
+// "panic" command will then be sent to the gh-ost process the *communicators.Communicator is
+// working with
+func handleAbort(adapter *communicators.Communicator, logger *slog.Logger) http.HandlerFunc {
+	return onlyAllowMethod(http.MethodPost, func(writer http.ResponseWriter, request *http.Request) {
+		logger.Info("sending panic cmd to gh-ost")
+		if err := adapter.Panic(); err != nil {
+			logger.Error("failed to send panic cmd to gh-ost", err)
+			writer.WriteHeader(http.StatusInternalServerError)
+		}
+
+		logger.Info("sent panic cmd to gh-ost, gh-ost will now abort migration")
+		writer.WriteHeader(http.StatusCreated)
+	})
 }

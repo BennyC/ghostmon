@@ -52,6 +52,14 @@ func (a *Communicator) Unpostpone() error {
 	})
 }
 
+// Panic will communicate a panic request with gh-ost through the io.Writer
+// within the Communicator instance
+func (a *Communicator) Panic() error {
+	return a.connect(func(conn net.Conn) error {
+		return send(conn, []byte("panic"))
+	})
+}
+
 func (a *Communicator) connect(fn func(net.Conn) error) error {
 	conn, err := a.connector.Connect()
 	if err != nil {
