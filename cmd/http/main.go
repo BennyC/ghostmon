@@ -9,6 +9,7 @@ import (
 
 func main() {
 	logger := logging.New()
+	logger.Info("loading configuration from environment vars")
 	c, err := config.Load()
 	if err != nil {
 		logger.Error("unable to load configuration", err)
@@ -17,6 +18,7 @@ func main() {
 
 	comm := communicators.New(communicators.WithDialConnector(c), logger)
 	server := http.NewHTTPServer(comm)
+	logger.Info("starting http server")
 	if err := server.ListenAndServe(); err != nil {
 		logger.Error("unable to start http server", err)
 		return
