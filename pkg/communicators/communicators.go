@@ -2,7 +2,6 @@ package communicators
 
 import (
 	"fmt"
-	"github.com/justpark/ghostmon/pkg/config"
 	"golang.org/x/exp/slog"
 	"net"
 )
@@ -27,8 +26,8 @@ func (n DialConnector) Connect() (net.Conn, error) {
 	return conn, nil
 }
 
-func WithDialConnector(config *config.Config) Connector {
-	return &DialConnector{addr: config}
+func WithDialConnector(addr net.Addr) Connector {
+	return &DialConnector{addr: addr}
 }
 
 type Communicator struct {
