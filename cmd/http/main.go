@@ -17,7 +17,7 @@ func main() {
 	}
 
 	comm := communicators.New(communicators.WithDialConnector(c), logger)
-	server := http.NewHTTPServer(comm)
+	server := http.NewHTTPServer(comm, logger)
 	logger.Info("starting http server")
 	if err := server.ListenAndServe(); err != nil {
 		logger.Error("unable to start http server", err)

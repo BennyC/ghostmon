@@ -14,11 +14,11 @@ import (
 // returned to the caller
 func CreateHTTPServer(t *testing.T) (*http.Server, net.Conn) {
 	t.Helper()
-
+	logger := logging.NewNilLogger()
 	server, client := net.Pipe()
-	communicator := communicators.New(PipeConnector(client), logging.NewNilLogger())
+	communicator := communicators.New(PipeConnector(client), logger)
 
-	return ghttp.NewHTTPServer(communicator), server
+	return ghttp.NewHTTPServer(communicator, logger), server
 }
 
 var _ communicators.Connector = &pipeConnector{}
