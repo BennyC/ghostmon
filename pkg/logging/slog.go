@@ -8,7 +8,7 @@ import (
 
 // New will return a new *slog.Logger
 func New() *slog.Logger {
-	handler := slog.NewJSONHandler(os.Stdout)
+	handler := slog.NewTextHandler(os.Stdout)
 	logger := slog.New(handler)
 	slog.SetDefault(logger)
 
