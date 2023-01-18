@@ -48,17 +48,7 @@ func New(connector Connector, logger *slog.Logger) *Communicator {
 // within the Communicator instance
 func (a *Communicator) Unpostpone() error {
 	return a.connect(func(conn net.Conn) error {
-		_, err := conn.Write([]byte("unpostpone"))
-		if err != nil {
-			return fmt.Errorf("failed to write command: %w", err)
-		}
-
-		err = conn.Close()
-		if err != nil {
-			return fmt.Errorf("failed to close conn: %w", err)
-		}
-
-		return nil
+		return send(conn, []byte("unpostpone"))
 	})
 }
 
@@ -69,4 +59,18 @@ func (a *Communicator) connect(fn func(net.Conn) error) error {
 	}
 
 	return fn(conn)
+}
+
+func send(conn net.Conn, msg []byte) error {
+	_, err := conn.Write(msg)
+	if err != nil {
+		return fmt.Errorf("failed to write command: %w", err)
+	}
+
+	err = conn.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close conn: %w", err)
+	}
+
+	return nil
 }
