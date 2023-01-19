@@ -6,6 +6,7 @@ import (
 	gtest "github.com/justpark/ghostmon/pkg/testing"
 	"io"
 	"net"
+	"os"
 	"testing"
 
 	"github.com/sourcegraph/conc"
@@ -55,5 +56,34 @@ func TestCommunicator_Panic(t *testing.T) {
 
 	received, _ := io.ReadAll(server)
 	require.Equal(t, "panic", string(received))
+	wg.Wait()
+}
+
+func TestCommunicator_Status(t *testing.T) {
+	ln, _ := net.Listen("tcp", "127.0.0.1:0")
+	adapter := communicators.New(
+		communicators.WithDialConnector(ln.Addr()),
+		logging.NewNilLogger(),
+	)
+
+	var wg conc.WaitGroup
+	wg.Go(func() {
+		status, err := adapter.Status()
+
+		require.NoError(t, err)
+		require.NotNil(t, status)
+		require.Contains(t, string(status.Body), "Copy: 0/2915")
+	})
+
+	// Server should receive the message "status" and reply with a multi-line response
+	// regarding the current status of the gh-ost migration
+	b := make([]byte, 6)
+	conn, _ := ln.Accept()
+	_, _ = conn.Read(b)
+	w, _ := os.ReadFile("fixtures/status.txt")
+	_, _ = conn.Write(w)
+	_ = conn.Close()
+
+	require.Equal(t, "status", string(b))
 	wg.Wait()
 }

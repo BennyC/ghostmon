@@ -1,0 +1,7 @@
+# Migrating `test`.`sample_data_0`; Ghost table is `test`.`_sample_data_0_gst`
+# Migration started at Tue Jun 07 11:56:03 +0200 2016
+# chunk-size: 250; max lag: 1500ms; max-load: map[Threads_connected:20]
+# Throttle additional flag file: /tmp/gh-ost.throttle
+# Serving on unix socket: /tmp/gh-ost.test.sample_data_0.sock
+# Serving on TCP port: 10001
+Copy: 0/2915 0.0%; Applied: 0; Backlog: 0/100; Elapsed: 59s(copy), 59s(total); streamer: mysql-bin.000551:68067; ETA: throttled, commanded by user
