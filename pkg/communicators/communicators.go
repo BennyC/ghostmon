@@ -72,13 +72,11 @@ func (a *Communicator) Status() (*Status, error) {
 // send will write the msg to a net.Conn and handle any errors associated with
 // writing, reading or closing
 func send(conn net.Conn, w []byte, r []byte) error {
-	_, err := conn.Write(w)
-	if err != nil {
+	if _, err := conn.Write(w); err != nil {
 		return fmt.Errorf("failed to write command: %w", err)
 	}
 
-	err = conn.Close()
-	if err != nil {
+	if err := conn.Close(); err != nil {
 		return fmt.Errorf("failed to close conn: %w", err)
 	}
 
@@ -88,18 +86,15 @@ func send(conn net.Conn, w []byte, r []byte) error {
 // sendReceive will write the msg to a net.Conn and receive the response. Any errors associated with
 // writing, reading or closing will be handled
 func sendReceive(conn net.Conn, w []byte, r []byte) error {
-	_, err := conn.Write(w)
-	if err != nil {
+	if _, err := conn.Write(w); err != nil {
 		return fmt.Errorf("failed to write command: %w", err)
 	}
 
-	_, err = conn.Read(r)
-	if err != nil {
+	if _, err := conn.Read(r); err != nil {
 		return fmt.Errorf("failed to read after write: %w", err)
 	}
 
-	err = conn.Close()
-	if err != nil {
+	if err := conn.Close(); err != nil {
 		return fmt.Errorf("failed to close conn: %w", err)
 	}
 
