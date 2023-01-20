@@ -72,15 +72,15 @@ func (c *Communicator) Status() (*Status, error) {
 // Send will write the msg to a net.Conn and handle any errors associated with
 // writing, reading or closing
 func (c *Communicator) Send(conn net.Conn, w []byte) error {
-	c.logger.Debug("attempting to write msg to net.Conn", slog.String("msg", string(w)))
+	c.logger.Debug("Communicator.Send: attempting to write msg to net.Conn", slog.String("msg", string(w)))
 	if _, err := conn.Write(w); err != nil {
-		c.logger.Error("failed to write msg to net.Conn", err, slog.String("msg", string(w)))
+		c.logger.Error("Communicator.Send: failed to write msg to net.Conn", err, slog.String("msg", string(w)))
 		return fmt.Errorf("failed to write command: %w", err)
 	}
 
-	c.logger.Debug("attempting to close net.Conn", slog.String("msg", string(w)))
+	c.logger.Debug("Communicator.Send: attempting to close net.Conn", slog.String("msg", string(w)))
 	if err := conn.Close(); err != nil {
-		c.logger.Error("failed to close net.Conn", err)
+		c.logger.Error("Communicator.Send: failed to close net.Conn", err)
 		return fmt.Errorf("failed to close conn: %w", err)
 	}
 
@@ -90,21 +90,21 @@ func (c *Communicator) Send(conn net.Conn, w []byte) error {
 // SendAndReceive will write the msg to a net.Conn and receive the response. Any errors associated with
 // writing, reading or closing will be handled
 func (c *Communicator) SendAndReceive(conn net.Conn, w []byte, r []byte) error {
-	c.logger.Debug("attempting to write msg to net.Conn", slog.String("msg", string(w)))
+	c.logger.Debug("Communicator.SendAndReceive: attempting to write msg to net.Conn", slog.String("msg", string(w)))
 	if _, err := conn.Write(w); err != nil {
-		c.logger.Error("failed to write msg to net.Conn", err, slog.String("msg", string(w)))
+		c.logger.Error("Communicator.SendAndReceive: failed to write msg to net.Conn", err, slog.String("msg", string(w)))
 		return fmt.Errorf("failed to write command: %w", err)
 	}
 
-	c.logger.Debug("attempting to read msg from net.Conn")
+	c.logger.Debug("Communicator.SendAndReceive: attempting to read msg from net.Conn")
 	if _, err := conn.Read(r); err != nil {
-		c.logger.Error("failed to read msg from net.Conn", err)
+		c.logger.Error("Communicator.SendAndReceive: failed to read msg from net.Conn", err)
 		return fmt.Errorf("failed to read after write: %w", err)
 	}
 
-	c.logger.Debug("attempting to close net.Conn", slog.String("msg", string(w)))
+	c.logger.Debug("Communicator.SendAndReceive: attempting to close net.Conn", slog.String("msg", string(w)))
 	if err := conn.Close(); err != nil {
-		c.logger.Error("failed to close net.Conn", err)
+		c.logger.Error("Communicator.SendAndReceive: failed to close net.Conn", err)
 		return fmt.Errorf("failed to close conn: %w", err)
 	}
 
