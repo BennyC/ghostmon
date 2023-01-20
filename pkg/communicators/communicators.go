@@ -23,8 +23,8 @@ func New(connector Connector, logger *slog.Logger) *Communicator {
 // Connect will allow the Communicator to start communicating with the external
 // gh-ost process. When a successful connection is achieved, the callback provided
 // will receive a net.Conn to communicate with
-func (a *Communicator) Connect(fn func(net.Conn) error) error {
-	conn, err := a.connector.Connect()
+func (c *Communicator) Connect(fn func(net.Conn) error) error {
+	conn, err := c.connector.Connect()
 	if err != nil {
 		return err
 	}
@@ -34,17 +34,17 @@ func (a *Communicator) Connect(fn func(net.Conn) error) error {
 
 // Unpostpone will communicate a cutover request with gh-ost through the io.Writer
 // within the Communicator instance
-func (a *Communicator) Unpostpone() error {
-	return a.Connect(func(conn net.Conn) error {
-		return a.Send(conn, []byte("unpostpone"))
+func (c *Communicator) Unpostpone() error {
+	return c.Connect(func(conn net.Conn) error {
+		return c.Send(conn, []byte("unpostpone"))
 	})
 }
 
 // Panic will communicate a panic request with gh-ost through the io.Writer
 // within the Communicator instance
-func (a *Communicator) Panic() error {
-	return a.Connect(func(conn net.Conn) error {
-		return a.Send(conn, []byte("panic"))
+func (c *Communicator) Panic() error {
+	return c.Connect(func(conn net.Conn) error {
+		return c.Send(conn, []byte("panic"))
 	})
 }
 
@@ -54,10 +54,10 @@ type Status struct {
 
 // Status will return the status of the connected gh-ost process
 // Any errors during communication will be returned to the caller
-func (a *Communicator) Status() (*Status, error) {
+func (c *Communicator) Status() (*Status, error) {
 	body := make([]byte, 1024)
-	err := a.Connect(func(conn net.Conn) error {
-		return a.SendAndReceive(conn, []byte("status"), body)
+	err := c.Connect(func(conn net.Conn) error {
+		return c.SendAndReceive(conn, []byte("status"), body)
 	})
 
 	if err != nil {
@@ -71,12 +71,16 @@ func (a *Communicator) Status() (*Status, error) {
 
 // Send will write the msg to a net.Conn and handle any errors associated with
 // writing, reading or closing
-func (_ *Communicator) Send(conn net.Conn, w []byte) error {
+func (c *Communicator) Send(conn net.Conn, w []byte) error {
+	c.logger.Debug("attempting to write msg to net.Conn", slog.String("msg", string(w)))
 	if _, err := conn.Write(w); err != nil {
+		c.logger.Error("failed to write msg to net.Conn", err, slog.String("msg", string(w)))
 		return fmt.Errorf("failed to write command: %w", err)
 	}
 
+	c.logger.Debug("attempting to close net.Conn", slog.String("msg", string(w)))
 	if err := conn.Close(); err != nil {
+		c.logger.Error("failed to close net.Conn", err)
 		return fmt.Errorf("failed to close conn: %w", err)
 	}
 
@@ -85,16 +89,22 @@ func (_ *Communicator) Send(conn net.Conn, w []byte) error {
 
 // SendAndReceive will write the msg to a net.Conn and receive the response. Any errors associated with
 // writing, reading or closing will be handled
-func (_ *Communicator) SendAndReceive(conn net.Conn, w []byte, r []byte) error {
+func (c *Communicator) SendAndReceive(conn net.Conn, w []byte, r []byte) error {
+	c.logger.Debug("attempting to write msg to net.Conn", slog.String("msg", string(w)))
 	if _, err := conn.Write(w); err != nil {
+		c.logger.Error("failed to write msg to net.Conn", err, slog.String("msg", string(w)))
 		return fmt.Errorf("failed to write command: %w", err)
 	}
 
+	c.logger.Debug("attempting to read msg from net.Conn")
 	if _, err := conn.Read(r); err != nil {
+		c.logger.Error("failed to read msg from net.Conn", err)
 		return fmt.Errorf("failed to read after write: %w", err)
 	}
 
+	c.logger.Debug("attempting to close net.Conn", slog.String("msg", string(w)))
 	if err := conn.Close(); err != nil {
+		c.logger.Error("failed to close net.Conn", err)
 		return fmt.Errorf("failed to close conn: %w", err)
 	}
 
