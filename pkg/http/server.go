@@ -1,6 +1,7 @@
 package http
 
 import (
+	"encoding/json"
 	"github.com/justpark/ghostmon/pkg/communicators"
 	"golang.org/x/exp/slog"
 	"net/http"
@@ -42,10 +43,33 @@ func handleUnpostpone(adapter *communicators.Communicator, logger *slog.Logger) 
 // handleStatus creates a http.HandlerFunc that will accept GET requests and communicate with our gh-ost process
 // to find out what our current status is. Status is then returned via JSON to the caller.
 func handleStatus(adapter *communicators.Communicator, logger *slog.Logger) http.HandlerFunc {
+	type statusResponse struct {
+		FullStatus string `json:"full_status"`
+		Table      string `json:"table,omitempty"`
+	}
+
 	return onlyAllowMethod(http.MethodGet, func(writer http.ResponseWriter, request *http.Request) {
-		_, err := adapter.Status()
+		status, err := adapter.Status()
 		if err != nil {
 			logger.Warn("handleStatus: unable to fetch status of the migration")
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		table, _ := status.Table()
+		b, err := json.Marshal(&statusResponse{
+			FullStatus: string(status.Body),
+			Table:      table,
+		})
+
+		if err != nil {
+			logger.Error("handleStatus: failed to marshal response", err)
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		if _, err := writer.Write(b); err != nil {
+			logger.Error("handleStatus: failed to write response", err)
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}

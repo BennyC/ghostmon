@@ -3,10 +3,12 @@ package http_test
 import (
 	gtest "github.com/justpark/ghostmon/pkg/testing"
 	"github.com/sourcegraph/conc"
+	"github.com/steinfletcher/apitest-jsonpath/jsonpath"
 	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
 
@@ -69,7 +71,8 @@ func TestHandleStatusSendsStatusCommand(t *testing.T) {
 	wg.Go(func() {
 		msg := make([]byte, 6)
 		_, _ = listener.Read(msg)
-		_, _ = listener.Write([]byte("Hello, World"))
+		w, _ := os.ReadFile("fixtures/status.txt")
+		_, _ = listener.Write(w)
 
 		require.EqualValues(t, "status", msg)
 	})
@@ -79,6 +82,8 @@ func TestHandleStatusSendsStatusCommand(t *testing.T) {
 	httpServer.Handler.ServeHTTP(response, request)
 
 	require.Equal(t, http.StatusOK, response.Code)
+	require.NoError(t, jsonpath.Equal("table", "`test`.`sample_data_0`", response.Body))
+
 	wg.Wait()
 }
 

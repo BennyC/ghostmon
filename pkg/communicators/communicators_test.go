@@ -84,3 +84,12 @@ func TestCommunicator_Status(t *testing.T) {
 	require.Equal(t, "status", string(b))
 	wg.Wait()
 }
+
+func TestStatus_Table(t *testing.T) {
+	w, _ := os.ReadFile("fixtures/status.txt")
+	s := &communicators.Status{Body: w}
+	table, err := s.Table()
+
+	require.NoError(t, err)
+	require.Equal(t, "`test`.`sample_data_0`", table)
+}

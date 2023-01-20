@@ -1,9 +1,11 @@
 package communicators
 
 import (
+	"bytes"
 	"fmt"
 	"golang.org/x/exp/slog"
 	"net"
+	"regexp"
 )
 
 type Communicator struct {
@@ -52,6 +54,21 @@ type Status struct {
 	Body []byte
 }
 
+// Table lets you know which Table is being migrated within the current Status
+func (s Status) Table() (string, error) {
+	r, err := regexp.Compile("Migrating ([\\w`.]+)")
+	if err != nil {
+		return "", fmt.Errorf("Status.Table: unable to compile regex: %w", err)
+	}
+
+	matches := r.FindStringSubmatch(string(s.Body))
+	if len(matches) < 2 {
+		return "", fmt.Errorf("Status.Table: unable to find migration table in Body")
+	}
+
+	return matches[1], nil
+}
+
 // Status will return the status of the connected gh-ost process
 // Any errors during communication will be returned to the caller
 func (c *Communicator) Status() (*Status, error) {
@@ -65,7 +82,7 @@ func (c *Communicator) Status() (*Status, error) {
 	}
 
 	return &Status{
-		Body: body,
+		Body: bytes.Trim(body, "\x00"),
 	}, nil
 }
 
