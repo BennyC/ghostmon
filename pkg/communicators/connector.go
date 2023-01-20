@@ -19,6 +19,8 @@ type DialConnector struct {
 	addr net.Addr
 }
 
+// Connect on DialConnector will connect via the net.Addr specified when the DialConnector
+// was created. SetDeadline on net.Conn will be called when the connection is started
 func (n DialConnector) Connect() (net.Conn, error) {
 	conn, err := net.Dial(n.addr.Network(), n.addr.String())
 
@@ -33,6 +35,8 @@ func (n DialConnector) Connect() (net.Conn, error) {
 	return conn, nil
 }
 
+// WithDialConnector will create a Connector which will dial with a net.Addr when
+// communicators.Communicator attempts to communicate with gh-ost
 func WithDialConnector(addr net.Addr) Connector {
 	return &DialConnector{addr: addr}
 }
