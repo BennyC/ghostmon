@@ -10,18 +10,6 @@ import (
 	"testing"
 )
 
-// CreateHTTPServer will create a ghostmon.HTTPServer and give it the net address
-// of a random testable TCP port. The listener for this port will also be
-// returned to the caller
-func CreateHTTPServer(t *testing.T) (*http.Server, net.Conn) {
-	t.Helper()
-	logger := logging.NewNilLogger()
-	server, client := net.Pipe()
-	communicator := communicators.New(PipeConnector(client), logger)
-
-	return ghttp.NewHTTPServer(":8080", communicator, logger), server
-}
-
 var _ communicators.Connector = &pipeConnector{}
 
 type pipeConnector struct {
@@ -36,6 +24,18 @@ func PipeConnector(s net.Conn) communicators.Connector {
 
 func (p pipeConnector) Connect() (net.Conn, error) {
 	return p.server, nil
+}
+
+// CreateHTTPServer will create a ghostmon.HTTPServer and give it the net address
+// of a random testable TCP port. The listener for this port will also be
+// returned to the caller
+func CreateHTTPServer(t *testing.T) (*http.Server, net.Conn) {
+	t.Helper()
+	logger := logging.NewNilLogger()
+	server, client := net.Pipe()
+	communicator := communicators.New(PipeConnector(client), logger)
+
+	return ghttp.NewHTTPServer(":8080", communicator, logger), server
 }
 
 // ListenAndRespond will take a net.Listener and accept the next net.Conn. Will Read the contents of
