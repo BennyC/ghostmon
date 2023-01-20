@@ -78,11 +78,8 @@ func TestCommunicator_Status(t *testing.T) {
 	// Server should receive the message "status" and reply with a multi-line response
 	// regarding the current status of the gh-ost migration
 	b := make([]byte, 6)
-	conn, _ := ln.Accept()
-	_, _ = conn.Read(b)
 	w, _ := os.ReadFile("fixtures/status.txt")
-	_, _ = conn.Write(w)
-	_ = conn.Close()
+	gtest.ListenAndRespond(t, ln, b, w)
 
 	require.Equal(t, "status", string(b))
 	wg.Wait()
