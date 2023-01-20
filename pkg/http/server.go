@@ -14,7 +14,7 @@ func NewHTTPServer(
 ) *http.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/unpostpone", handleUnpostpone(adapter, logger))
-	mux.HandleFunc("/status", handleStatus(adapter))
+	mux.HandleFunc("/status", handleStatus(adapter, logger))
 	mux.HandleFunc("/abort", handleAbort(adapter, logger))
 
 	return &http.Server{
@@ -29,22 +29,29 @@ func NewHTTPServer(
 // and send an "unpostpone" command over the Communicator to the postponed gh-ost process
 func handleUnpostpone(adapter *communicators.Communicator, logger *slog.Logger) http.HandlerFunc {
 	return onlyAllowMethod(http.MethodPost, func(writer http.ResponseWriter, request *http.Request) {
-		logger.Info("sending unpostpone cmd to gh-ost")
 		if err := adapter.Unpostpone(); err != nil {
-			logger.Error("unable to send unpostpone cmd to connected gh-ost instance", err)
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		logger.Info("successfully sent unpostpone cmd to gh-ost")
+		logger.Info("handleUnpostpone: successfully sent unpostpone cmd to gh-ost")
 		writer.WriteHeader(http.StatusCreated)
 	})
 }
 
-func handleStatus(adapter *communicators.Communicator) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		writer.WriteHeader(http.StatusNotImplemented)
-	}
+// handleStatus creates a http.HandlerFunc that will accept GET requests and communicate with our gh-ost process
+// to find out what our current status is. Status is then returned via JSON to the caller.
+func handleStatus(adapter *communicators.Communicator, logger *slog.Logger) http.HandlerFunc {
+	return onlyAllowMethod(http.MethodGet, func(writer http.ResponseWriter, request *http.Request) {
+		_, err := adapter.Status()
+		if err != nil {
+			logger.Warn("handleStatus: unable to fetch status of the migration")
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		writer.WriteHeader(http.StatusOK)
+	})
 }
 
 // handleAbort creates a http.HandlerFunc that will only accept POST requests from the client
@@ -52,13 +59,11 @@ func handleStatus(adapter *communicators.Communicator) http.HandlerFunc {
 // working with
 func handleAbort(adapter *communicators.Communicator, logger *slog.Logger) http.HandlerFunc {
 	return onlyAllowMethod(http.MethodPost, func(writer http.ResponseWriter, request *http.Request) {
-		logger.Info("sending panic cmd to gh-ost")
 		if err := adapter.Panic(); err != nil {
-			logger.Error("failed to send panic cmd to gh-ost", err)
 			writer.WriteHeader(http.StatusInternalServerError)
 		}
 
-		logger.Info("sent panic cmd to gh-ost, gh-ost will now abort migration")
+		logger.Info("handleAbort: sent panic cmd to gh-ost, gh-ost will now abort migration")
 		writer.WriteHeader(http.StatusCreated)
 	})
 }

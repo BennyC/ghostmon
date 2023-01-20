@@ -63,7 +63,23 @@ func TestHandleUnpostponeSendsCommand(t *testing.T) {
 }
 
 func TestHandleStatusSendsStatusCommand(t *testing.T) {
-	t.Skip()
+	httpServer, listener := gtest.CreateHTTPServer(t)
+
+	var wg conc.WaitGroup
+	wg.Go(func() {
+		msg := make([]byte, 6)
+		_, _ = listener.Read(msg)
+		_, _ = listener.Write([]byte("Hello, World"))
+
+		require.EqualValues(t, "status", msg)
+	})
+
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/status", nil)
+	httpServer.Handler.ServeHTTP(response, request)
+
+	require.Equal(t, http.StatusOK, response.Code)
+	wg.Wait()
 }
 
 func TestAbortSendsPanicCommand(t *testing.T) {
