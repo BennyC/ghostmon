@@ -1,0 +1,37 @@
+openapi: 3.0.3
+info:
+  title: ghostmon
+  description: ghostmon
+  version: 1.0.0
+servers:
+  - url: 'https'
+paths:
+  /status:
+    post:
+      description: Retrieve the current status of the connected gh-ost process
+      responses: 
+        "200":
+          description: Retrieved the current status of the connected gh-ost process
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  full_status: 
+                    type: string
+                  table:
+                    type: string
+
+  /unpostpone:
+    post:
+      description: Unpostpone the currently connected gh-ost process, if required
+      responses:
+        "201":
+          description: Successfully unpostpone a postponed gh-ost process
+
+  /abort:
+    post:
+      description: Abort the currently connected gh-ost process immediately
+      responses:
+        "201":
+          description: Successfully abort a running gh-ost process
