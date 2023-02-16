@@ -29,7 +29,7 @@ func NewHTTPServer(
 // handleUnpostpone creates a http.HandlerFunc that will only accept POST requests
 // and send an "unpostpone" command over the Communicator to the postponed gh-ost process
 func handleUnpostpone(adapter *communicators.Communicator, logger *slog.Logger) http.HandlerFunc {
-	return onlyAllowMethod(http.MethodPost, func(writer http.ResponseWriter, request *http.Request) {
+	return OnlyAllowMethod(http.MethodPost, func(writer http.ResponseWriter, request *http.Request) {
 		if err := adapter.Unpostpone(); err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
@@ -48,7 +48,7 @@ func handleStatus(adapter *communicators.Communicator, logger *slog.Logger) http
 		Table      string `json:"table,omitempty"`
 	}
 
-	return onlyAllowMethod(http.MethodGet, func(writer http.ResponseWriter, request *http.Request) {
+	return OnlyAllowMethod(http.MethodGet, func(writer http.ResponseWriter, request *http.Request) {
 		status, err := adapter.Status()
 		if err != nil {
 			logger.Warn("handleStatus: unable to fetch status of the migration")
@@ -82,7 +82,7 @@ func handleStatus(adapter *communicators.Communicator, logger *slog.Logger) http
 // "panic" command will then be sent to the gh-ost process the *communicators.Communicator is
 // working with
 func handleAbort(adapter *communicators.Communicator, logger *slog.Logger) http.HandlerFunc {
-	return onlyAllowMethod(http.MethodPost, func(writer http.ResponseWriter, request *http.Request) {
+	return OnlyAllowMethod(http.MethodPost, func(writer http.ResponseWriter, request *http.Request) {
 		if err := adapter.Panic(); err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 		}
